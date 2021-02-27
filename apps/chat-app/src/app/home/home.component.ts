@@ -22,13 +22,13 @@ const GET_USER = gql`
 
 
 @Component({
-    selector: 'app-home',
+    selector: 'nx-anymind-home',
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
 
-    loading: boolean = false;
+    loading = false;
     userData: Observable<any>;
 
     // private querySubscription: Subscription = new Subscription();
