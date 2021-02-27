@@ -16,9 +16,17 @@
   "npmScope": "nx-anymind",
   "tasksRunnerOptions": {
     "default": {
-      "runner": "@nrwl/workspace/tasks-runners/default",
+      "runner": "@nrwl/nx-cloud",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ],
+        "accessToken": "MDBiNjdjYmEtNjkyNy00MDQ4LWIyNDMtOTE4YzAwODdiMjA5fHJlYWQtd3JpdGU=",
+        "canTrackAnalytics": false,
+        "showUsageWarnings": true
       }
     }
   },
@@ -28,7 +36,9 @@
     },
     "chat-app-e2e": {
       "tags": [],
-      "implicitDependencies": ["chat-app"]
+      "implicitDependencies": [
+        "chat-app"
+      ]
     }
   }
 }
