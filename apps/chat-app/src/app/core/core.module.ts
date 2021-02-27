@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule, Optional, SkipSelf } from '@angular/core';
-import { EffectsModule } from '@ngrx/effects';
-import { StoreModule } from '@ngrx/store';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { ApolloClientOptions, ApolloLink, InMemoryCache } from '@apollo/client/core';
 import { HttpLink } from 'apollo-angular/http';
 import { onError } from '@apollo/client/link/error';
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { EffectsModule } from '@ngrx/effects';
 
 // import { reducers } from './store/reducers/index.reducer';
 
@@ -41,10 +42,9 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
 @NgModule({
     imports: [
         CommonModule,
-        // StoreModule.forFeature('core', reducers),
-        EffectsModule.forFeature([
-            // add effects here
-        ])
+        StoreModule.forRoot({}),
+        StoreDevtoolsModule.instrument({ maxAge: 25, name: 'anymind-chat-app' }),
+        EffectsModule.forRoot([])
     ],
     providers: [
         {
