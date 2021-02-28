@@ -1,1 +1,14 @@
-<p>master works!</p>
+<!-- Master container -->
+<div class="flex h-screen w-screen antialiased text-gray-800">
+    <!-- Flex container-->
+    <div class="flex flex-row h-full w-full overflow-x-hidden">
+        <div class="flex flex-col py-8 pl-6 pr-2 w-64 bg-white flex-shrink-0">
+            <nx-anymind-menu></nx-anymind-menu>
+        </div>
+        
+        <!-- Chat view container-->
+        <div class="flex flex-col flex-auto h-full p-6">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>

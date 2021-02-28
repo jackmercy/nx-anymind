@@ -1,15 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'nx-anymind-chat-view',
-  templateUrl: './chat-view.component.html',
-  styleUrls: ['./chat-view.component.scss']
+    selector: 'nx-anymind-chat-view',
+    templateUrl: './chat-view.component.html',
+    styleUrls: ['./chat-view.component.scss']
 })
-export class ChatViewComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
+export class ChatViewComponent {
 }

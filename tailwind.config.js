@@ -1,17 +1,19 @@
 module.exports = {
     prefix: '',
     purge: {
-      content: [
-        './apps/**/*.{html,ts}',
-        './libs/**/*.{html,ts}',
-      ]
+        content: [
+            './apps/**/*.{html,ts}',
+            './libs/**/*.{html,ts}',
+        ]
     },
     darkMode: false, // or 'media' or 'class'
     theme: {
-      extend: {},
+        extend: {},
     },
     variants: {
-      extend: {},
+        extend: {
+            backgroundColor: ['active'],
+        }
     },
     plugins: [],
 };

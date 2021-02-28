@@ -1,8 +1,9 @@
-import { GenericItem } from '../type/core.interface';
+import { channelId, userId } from '../type/core.type';
+import { User, Channel } from '../model/core.interface';
 
 export interface GlobalAppState {
-    currentChannelId: string;
-    currentUserId: string;
-    users: GenericItem[];
-    channels: GenericItem[]; 
+    currentChannelId: channelId;
+    currentUserId: userId;
+    users: User[];
+    channels: Channel[];
 }

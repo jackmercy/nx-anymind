@@ -1,1 +1,16 @@
-<p>chat-view works!</p>
+<div class="h-full">
+    <!-- child container -->
+    <div class="shadow-xl flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-50 h-full p-4">
+        <!-- Channel name -->
+        <div class="flex flex-col border-b border-red-300">
+            <span class="mb-2">Channel title</span>
+        </div>
+        <!-- Dialogue -->
+        <div class="flex flex-col h-full overflow-x-auto mb-2 dialogue-bg">
+            <nx-anymind-dialogue></nx-anymind-dialogue>
+        </div>
+
+        <!-- Send message -->
+        <nx-anymind-send-message></nx-anymind-send-message>
+    </div>
+</div>

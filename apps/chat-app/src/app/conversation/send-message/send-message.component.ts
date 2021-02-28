@@ -1,15 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'nx-anymind-send-message',
-  templateUrl: './send-message.component.html',
-  styleUrls: ['./send-message.component.scss']
+    selector: 'nx-anymind-send-message',
+    templateUrl: './send-message.component.html',
+    styleUrls: ['./send-message.component.scss']
 })
-export class SendMessageComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
+export class SendMessageComponent {
 
 }

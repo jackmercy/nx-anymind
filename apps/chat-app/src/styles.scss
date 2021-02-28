@@ -1,4 +1,13 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import "~@ng-select/ng-select/themes/default.theme.css";
 /* You can add global styles to this file, and also import other style files */
+
+body {
+    background-color: #edf2f7;
+
+    nx-anymind-chat-view, nx-anymind-dialogue {
+        height: 100%;
+    }
+}
