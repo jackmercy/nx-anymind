@@ -7,6 +7,7 @@ import { onError } from '@apollo/client/link/error';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { EffectsModule } from '@ngrx/effects';
+import { reducers } from './store/reducers/index.reducer';
 
 // import { reducers } from './store/reducers/index.reducer';
 
@@ -42,7 +43,7 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
 @NgModule({
     imports: [
         CommonModule,
-        StoreModule.forRoot({}),
+        StoreModule.forRoot(reducers),
         StoreDevtoolsModule.instrument({ maxAge: 25, name: 'anymind-chat-app' }),
         EffectsModule.forRoot([])
     ],
