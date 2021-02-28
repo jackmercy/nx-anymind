@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Message } from '../../core/model/core.interface';
+import { channelId, userId } from '../../core/type/core.type';
 
 @Component({
     selector: 'nx-anymind-dialogue',
@@ -7,6 +8,9 @@ import { Message } from '../../core/model/core.interface';
     styleUrls: ['./dialogue.component.scss']
 })
 export class DialogueComponent {
+    @Input() channelId: channelId;
+    @Input() userId: userId;
+
     private userMessageGridClass = 'col-start-6 col-end-13 p-3 rounded-lg';
     private incommingMessageGridClass = 'col-start-1 col-end-8 p-3 rounded-lg';
     mockMessage: Message = {
