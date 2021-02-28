@@ -10,7 +10,7 @@ import { EffectsModule } from '@ngrx/effects';
 
 // import { reducers } from './store/reducers/index.reducer';
 
-const uri = 'https://graphqlzero.almansi.me/api';
+const uri = 'https://angular-test-backend-yc4c5cvnnq-an.a.run.app/graphiql';
 
 const linkError = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
