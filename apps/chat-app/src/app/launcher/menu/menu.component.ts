@@ -7,7 +7,7 @@ import { selectUsers } from '../../core/store/selectors/user.selectors';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators'
 import { userId } from '../../core/type/core.type';
-import { setCurrentChannel } from '../../core/store/actions/core.actions';
+import { setCurrentChannel, setCurrentUser } from '../../core/store/actions/core.actions';
 @Component({
     selector: 'nx-anymind-menu',
     templateUrl: './menu.component.html',
@@ -31,13 +31,19 @@ export class MenuComponent implements OnInit {
 
     onSelectUser($event: User): void {
         this.currentUser = $event;
+        this.store.dispatch(setCurrentUser({
+            userId: this.currentUser?.id, update: {
+                id: this.currentUser?.id,
+                changes: { ...this.currentUser }
+            }
+        }));
     }
 
     onChangeChannel(selectedChannel: Channel): void {
         const updater = [];
         this.channels.forEach(channel => {
             updater.push({
-                changes: {...channel, active: selectedChannel.id === channel.id},
+                changes: { ...channel, active: selectedChannel.id === channel.id },
                 id: channel.id
             });
         });
