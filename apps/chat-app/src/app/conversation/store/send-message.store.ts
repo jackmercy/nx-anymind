@@ -82,6 +82,7 @@ export class SendMessageComponentStore extends ImmerComponentStore<SendMessageCo
                 tap(({ data, errors }) => {
                     if (!errors) {
                         this.updateSendStatus('success');
+                        this.updateSendMessage(undefined);
                         this.updatePostResponse(data as Message);
                     } else {
                         this.updateError(errors);

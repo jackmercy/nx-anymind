@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Message } from '../../core/model/core.interface';
-
+import { qlStatus } from '../../core/type/core.type';
 
 @Component({
     selector: 'nx-anymind-message',
@@ -10,7 +10,7 @@ import { Message } from '../../core/model/core.interface';
 export class MessageComponent {
     @Input() message: Message;
     @Input() isUserMessage = true;
-    @Input() isUnsentMessage = false;
+    @Input() messageStatus: 'loading' | 'unsent' = undefined;
 
     getMessageContainerClassName(): string {
         if (this.isUserMessage) {

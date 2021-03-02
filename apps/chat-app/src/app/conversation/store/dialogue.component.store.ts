@@ -74,6 +74,15 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
         state.dialogues = messages;
     });
 
+    readonly addNewMessage = this.updater<Message>((state, message) => {
+        state.dialogues = [...state.dialogues, { ...message, messageId: 'loading' }];
+    });
+
+    readonly updateNewMessageStatus = this.updater<string>((state, status) => {
+        const index = state.dialogues.findIndex(msg => msg.messageId === 'loading');
+        state.dialogues[index].messageId = status;
+    });
+
     readonly updateFetchMoreDialogues = this.updater<{ moreDialogue: Message[], old: boolean }>((state, data) => {
         const updatedDialogues = data.old ? [...state.dialogues, ...data.moreDialogue]: [...data.moreDialogue, ...state.dialogues];
         state.dialogues = updatedDialogues;

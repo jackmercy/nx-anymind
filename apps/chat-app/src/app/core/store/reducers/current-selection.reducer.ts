@@ -4,7 +4,7 @@ import * as actions from '../actions/core.actions';
 
 export const initialState: CurrentSelection = {
     currentChannelId: undefined,
-    currentUserId: undefined,
+    currentUserId: undefined
 };
 
 const reducer = createReducer(

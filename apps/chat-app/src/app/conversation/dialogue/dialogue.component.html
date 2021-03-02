@@ -1,4 +1,7 @@
-<div *ngIf="viewModel$|async as vm" class="relative flex flex-col h-full flex-col-reverse">
+<div *ngIf="{
+    vm: viewModel$|async,
+    sendMsgVm: sendMessageVm$|async
+} as obs" class="relative flex flex-col h-full flex-col-reverse">
     <!-- Read more (old message) -->
     <div (click)="getMoreMessage(true)"
         class="group absolute text-md top-2 left-0 bg-red-400 py-2 px-4 shadow rounded-xl hover:bg-red-500 active:bg-red-600">
@@ -7,13 +10,14 @@
                 <span>Read more</span>
                 <span class="ml-1 w-5">
                     <!-- more indicator -->
-                    <svg *ngIf="true" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg *ngIf="obs.vm.isSuccessFetchOlder" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7l4-4m0 0l4 4m-4-4v18" />
                     </svg>
                     <!-- Spin loading indicator -->
-                    <svg *ngIf="false" class="animate-spin text-white" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24">
+                    <svg *ngIf="obs.vm.isLoadingOlder" class="animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                         </circle>
                         <path class="opacity-75" fill="currentColor" stroke-width="2"
@@ -26,10 +30,10 @@
     </div>
     <!-- Grid dialogues -->
     <div class="grid grid-cols-12 gap-y-4 pt-1 my-4">
-        <nx-anymind-message *ngFor="let item of vm.dialogues" [message]="item.text"
-            [isUserMessage]="item.messageId === currentSelection.currentUserId"
-            [class]="getMessageGridClassName(item.messageId === currentSelection.currentUserId)"
-            [isUnsentMessage]="false"></nx-anymind-message>
+        <nx-anymind-message *ngFor="let item of obs.vm.dialogues" [message]="item.text"
+            [isUserMessage]="isUserMessage(item.messageId)"
+            [class]="getMessageGridClassName(isUserMessage(item.messageId))" [isUnsentMessage]="false">
+        </nx-anymind-message> 
     </div>
 
     <!-- Read more (new message) -->
@@ -39,13 +43,14 @@
             <button class="flex items-center text-white justify-center focus:outline-none">
                 <span>Read more</span>
                 <span class="ml-1 w-5">
-                    <svg *ngIf="true" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg *ngIf="obs.vm.isSuccessFetchNewer" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M16 17l-4 4m0 0l-4-4m4 4V3" />
                     </svg>
                     <!-- Spin loading indicator -->
-                    <svg *ngIf="false" class="animate-spin text-white" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24">
+                    <svg *ngIf="obs.vm.isLoadingNewer" class="animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                         </circle>
                         <path class="opacity-75" fill="currentColor" stroke-width="2"
