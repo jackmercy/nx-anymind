@@ -1,13 +1,9 @@
-import { query } from '@angular/animations';
-import { variable } from '@angular/compiler/src/output/output_ast';
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { ImmerComponentStore } from 'ngrx-immer/component-store';
 import { switchMap, tap } from 'rxjs/operators';
-import { Channel, Message, User } from '../../core/model/core.interface';
-import { channelId, qlStatus, userId } from '../../core/type/core.type';
-import { SendMessageComponentStore } from './send-message.store';
-
+import { Message } from '../../core/model/core.interface';
+import { channelId, qlStatus } from '../../core/type/core.type';
 
 export interface DialogueComponentState {
     fetchLatestStatus: qlStatus;
@@ -16,6 +12,7 @@ export interface DialogueComponentState {
     dialogues: Message[];
 }
 
+
 const QueryLatestQL = gql`
 query fetchLatest($channelId: String!){
 	fetchLatestMessages(channelId: $channelId) {
@@ -23,9 +20,12 @@ query fetchLatest($channelId: String!){
 		text,
 		datetime,
 		userId,
-  }
+    }
 }
 `;
+
+
+export type QueryMoreRequest = { channelId: channelId, messageId: string, old: boolean }
 
 const QueryMoreQL = gql`
 query fetchMore($channelId: String!, $messageId: String!, $old: Boolean!){
@@ -34,30 +34,49 @@ query fetchMore($channelId: String!, $messageId: String!, $old: Boolean!){
 		text,
 		datetime,
 		userId,
-  }
+    }
 }
 `;
 
 @Injectable()
 export class DialogueComponentStore extends ImmerComponentStore<DialogueComponentState> {
-    readonly viewModel$ = this.select(this.state$, ({ dialogues: dialogue }) => ({
-        dialogue
+    readonly viewModel$ = this.select(this.state$, ({
+        dialogues, fetchLatestStatus, fetchNewerMessageStatus, fetchOlderMessageStatus 
+    }) => ({
+        dialogues,
+        // latest
+        isLoadingLatest: fetchLatestStatus === 'loading',
+        isFailFetchLatest: fetchLatestStatus === 'fail',
+        isSuccessFetchLatest: fetchLatestStatus === 'success',
+        // newer
+        isLoadingNewer: fetchNewerMessageStatus === 'loading',
+        isFailFetchNewer: fetchNewerMessageStatus === 'fail',
+        isSuccessFetchNewer: fetchNewerMessageStatus === 'success',
+        // older
+        isLoadingOlder: fetchOlderMessageStatus === 'loading',
+        isFailFetchOlder: fetchOlderMessageStatus === 'fail',
+        isSuccessFetchOlder: fetchOlderMessageStatus === 'success'
     }));
 
     readonly updateFetchLatestStatus = this.updater<qlStatus>((state, status) => {
         state.fetchLatestStatus = status;
     });
 
-    readonly updateFetchOlderStatus = this.updater<qlStatus>((state, status) => {
-        state.fetchOlderMessageStatus = status;
-    });
-
-    readonly updateFetchNewerStatus = this.updater<qlStatus>((state, status) => {
-        state.fetchNewerMessageStatus = status;
+    readonly updateFetchMoreStatus = this.updater<{ status: qlStatus, old: boolean }>((state, data) => {
+        if (data.old === true) {
+            state.fetchOlderMessageStatus = data.status;
+        } else if (data.old === false) {
+            state.fetchNewerMessageStatus = data.status;
+        }
     });
 
     readonly updateDialogues = this.updater<Message[]>((state, messages) => {
         state.dialogues = messages;
+    });
+
+    readonly updateFetchMoreDialogues = this.updater<{ moreDialogue: Message[], old: boolean }>((state, data) => {
+        const updatedDialogues = data.old ? [...state.dialogues, ...data.moreDialogue]: [...data.moreDialogue, ...state.dialogues];
+        state.dialogues = updatedDialogues;
     });
 
     readonly fetchLatestMessageEffect = this.effect<channelId>(event$ => event$.pipe(
@@ -72,15 +91,37 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
                 if (!error && !loading) {
                     this.updateFetchLatestStatus('success');
                     const result: any = data;
-                    this.updateDialogues(result?.fetchMoreMessages);
+                    this.updateDialogues(result?.fetchLatestMessages);
                 }
             })
         ))
     ));
 
+    readonly fetchMoreMessageEffect = this.effect<QueryMoreRequest>(event$ => event$.pipe(
+        tap((request) => this.updateFetchMoreStatus({ old: request.old, status: 'loading' })),
+        switchMap(( request: QueryMoreRequest ) => {
+            const requestData = request;
+            return this.apollo.watchQuery({
+                query: QueryMoreQL,
+                variables: {
+                    channelId: request.channelId,
+                    messageId: request.messageId,
+                    old: request.old
+                }
+            }).valueChanges.pipe(
+                tap(({ data, error, loading }) => {
+                    if (!error && !loading) {
+                        this.updateFetchMoreStatus({ old: requestData.old, status: 'success' });
+                        const result: any = data;
+                        this.updateFetchMoreDialogues({ old: requestData.old, moreDialogue: result.fetchMoreMessages as Message[] });
+                    }
+                })
+            )
+        })
+    ));
+
     constructor(
-        private apollo: Apollo,
-        private sendMessageComponentStore: SendMessageComponentStore
+        private apollo: Apollo
     ) {
         super({
             dialogues: undefined,
