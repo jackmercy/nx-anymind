@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { Message } from '../../core/model/core.interface';
-import { qlStatus } from '../../core/type/core.type';
 
 @Component({
     selector: 'nx-anymind-message',

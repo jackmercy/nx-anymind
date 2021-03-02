@@ -12,7 +12,7 @@ import { CoreModule } from './core/core.module';
         BrowserModule,
         HttpClientModule,
         AppRoutingModule,
-        CoreModule,
+        CoreModule
     ],
     providers: [],
     bootstrap: [AppComponent],

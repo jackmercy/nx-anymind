@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { ImmerComponentStore } from 'ngrx-immer/component-store';
 import { switchMap, tap } from 'rxjs/operators';
-import { Channel, Message, User } from '../../core/model/core.interface';
-import { qlStatus } from '../../core/type/core.type';
+import { Message } from '../../core/model/core.interface';
+import { channelId, qlStatus, userId } from '../../core/type/core.type';
 
 
 
 export type PostMessageRequest = {
-    channelId: Channel;
+    channelId: channelId;
     text: string;
-    userId: User;
+    userId: userId;
 };
 
 export interface SendMessageComponentState {
