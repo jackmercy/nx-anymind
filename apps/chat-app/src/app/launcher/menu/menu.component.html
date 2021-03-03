@@ -1,4 +1,3 @@
-<!-- flex flex-col py-8 pl-6 pr-2 w-64 bg-white h-full flex-shrink-0 -->
 <div class="container">
     <!-- App title -->
     <div class="flex flex-row items-center justify-center h-12 w-full">
@@ -13,13 +12,15 @@
         <div class="ml-2 font-bold text-2xl text-red-600">AnyChat</div>
     </div>
     <!-- Active user -->
-    <div class="group hover:bg-gray-100 flex flex-col items-center shadow border border-gray-200 mt-4 w-full py-6 px-4 rounded-lg">
+    <div
+        class="group hover:bg-gray-100 flex flex-col items-center shadow border border-gray-200 mt-4 w-full py-6 px-4 rounded-lg">
         <div class="h-20 w-20 rounded-full border overflow-hidden">
-            <img src="https://avatars.githubusercontent.com/u/30997515?s=60&v=4" alt="Avatar" class="h-full w-full" />
+            <img [src]="currentUser?.avatar || '../../../assets/image/default-user.png'" alt="Avatar"
+                class="h-full w-full" />
         </div>
-        <div class="text-sm font-semibold mt-2">Jack Cao</div>
-        <div class="text-xs text-gray-500">Software engineer</div>
-        <span class="flex items-center border rounded-full w-24 pr-2 justify-center mx-auto mt-2">
+        <div class="text-sm font-semibold mt-2">{{ currentUser?.id || 'User' }}</div>
+        <div *ngIf="currentUser" class="text-xs text-gray-500">Software engineer</div>
+        <span *ngIf="currentUser" class="flex items-center border rounded-full w-24 pr-2 justify-center mx-auto mt-2">
             <div class="bg-green-400 rounded-full w-2.5 h-2.5 block mr-2"></div>Active
         </span>
         <div class="flex flex-row items-center mt-3">
@@ -30,24 +31,24 @@
     <div class="flex flex-col mt-8">
         <!-- Users -->
         <div class="flex flex-row items-center justify-between text-xs">
-            <span class="font-bold">Choose your user</span>
+            <span class="font-bold text-base">Choose your user</span>
         </div>
-        <div class="flex flex-col space-y-1 mt-4 -mx-2">
+        <div *ngIf="users$|async as users" class="flex flex-col space-y-1 mt-4 -mx-2">
             <div class="mx-2">
-                <ng-select [items]="users" bindLabel="id" [clearable]="false" autofocus bindValue="id" [(ngModel)]="selectedUserId"></ng-select>
+                <ng-select [items]="users" bindLabel="id" [clearable]="false" autofocus bindValue="id"
+                    [(ngModel)]="selectedUserId" (change)="onSelectUser($event)"></ng-select>
             </div>
         </div>
         <!-- Channels -->
         <div class="flex flex-row items-center justify-between text-xs mt-6">
-            <span class="font-bold">Choose your Channel</span>
+            <span class="font-bold text-base">Choose your Channel</span>
         </div>
-        <div class="flex flex-col space-y-1 mt-4 -ml-2 mr-1">
-            <button class="focus:outline-none flex flex-row items-center hover:bg-gray-200 rounded-xl p-2">
-                <div class="ml-2 text-sm font-semibold">General</div>
-            </button>
-            <!-- Active item  add class 'bg-gray-200'-->
-            <button class="focus:outline-none flex flex-row items-center hover:bg-gray-200 rounded-xl p-2 bg-gray-200">
-                <div class="ml-2 text-sm font-semibold">General</div>
+        <div *ngIf="channels$|async as channels" class="flex flex-col space-y-1 mt-4 -ml-2 mr-1">
+            <button *ngFor="let channel of channels"
+                class="focus:outline-none flex flex-row items-center hover:bg-red-100 rounded-xl p-2"
+                [ngClass]="{'bg-red-100 text-red-600': channel.active, 'hover:text-red-500': !channel.active}"
+                (click)="onChangeChannel(channel);">
+                <div class="ml-2 text-sm font-semibold">{{channel.name}}</div>
             </button>
         </div>
     </div>

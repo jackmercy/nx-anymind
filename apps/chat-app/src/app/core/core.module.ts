@@ -7,10 +7,11 @@ import { onError } from '@apollo/client/link/error';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { EffectsModule } from '@ngrx/effects';
+import { reducers } from './store/reducers/index.reducer';
 
 // import { reducers } from './store/reducers/index.reducer';
 
-const uri = 'https://angular-test-backend-yc4c5cvnnq-an.a.run.app/graphiql';
+const uri = 'https://angular-test-backend-yc4c5cvnnq-an.a.run.app/graphql';
 
 const linkError = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
@@ -33,6 +34,7 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
         cache: new InMemoryCache(),
         defaultOptions: {
             watchQuery: {
+                fetchPolicy: 'no-cache',
                 errorPolicy: 'all'
             }
         }
@@ -42,7 +44,7 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
 @NgModule({
     imports: [
         CommonModule,
-        StoreModule.forRoot({}),
+        StoreModule.forRoot(reducers),
         StoreDevtoolsModule.instrument({ maxAge: 25, name: 'anymind-chat-app' }),
         EffectsModule.forRoot([])
     ],

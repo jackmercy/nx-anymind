@@ -19,7 +19,8 @@
           { "type": "element", "prefix": "nx-anymind", "style": "kebab-case" }
         ],
         "@angular-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-empty-interface": "off"
       }
     },
     {

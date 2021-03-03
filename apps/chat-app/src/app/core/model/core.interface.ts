@@ -13,9 +13,10 @@ export interface Channel {
 }
 
 export interface Message {
-    messageId: string;
+    messageId?: string;
     text: string;
     dateTime: string;
     userId: string;
     avatar?: string;
+    status?: string;
 }
