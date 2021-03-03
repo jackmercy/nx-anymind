@@ -6,16 +6,13 @@ import { AppState, CurrentSelection } from '../../core/store/app.state';
 import { selectChannels } from '../../core/store/selectors/channels.selectors';
 import { selectCurrentSelection } from '../../core/store/selectors/current-selection.selectors';
 import { channelId } from '../../core/type/core.type';
-import { SendMessageComponentStore } from '../store/send-message.store';
-
-// I put provider of Send message component store here b/c 
-// I want child component could inject this service not just the SendMessageComponent only.
+import { DialogueComponentStore } from '../store/dialogue.component.store';
 
 @Component({
     selector: 'nx-anymind-chat-view',
     templateUrl: './chat-view.component.html',
     styleUrls: ['./chat-view.component.scss'],
-    providers: [SendMessageComponentStore]
+    providers: [DialogueComponentStore]
 })
 export class ChatViewComponent implements OnInit {
     currentSelection$: Observable<CurrentSelection>;

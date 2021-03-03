@@ -1,16 +1,15 @@
 <div *ngIf="{
-    vm: viewModel$|async,
-    sendMsgVm: sendMessageVm$|async
+    vm: viewModel$|async
 } as obs" class="relative flex flex-col h-full flex-col-reverse">
     <!-- Read more (old message) -->
-    <div (click)="getMoreMessage(true)"
-        class="group absolute text-md top-2 left-0 bg-red-400 py-2 px-4 shadow rounded-xl hover:bg-red-500 active:bg-red-600">
+    <div
+        class="z-50 group absolute text-md top-2 left-0 bg-red-400 py-2 px-4 shadow rounded-xl hover:bg-red-500 active:bg-red-600">
         <div>
-            <button class="flex items-center text-white justify-center focus:outline-none">
+            <button (click)="getMoreMessage(true)" class="flex items-center text-white justify-center focus:outline-none">
                 <span>Read more</span>
                 <span class="ml-1 w-5">
                     <!-- more indicator -->
-                    <svg *ngIf="obs.vm.isSuccessFetchOlder" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    <svg *ngIf="!obs.vm.isLoadingOlder" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7l4-4m0 0l4 4m-4-4v18" />
@@ -29,21 +28,23 @@
         </div>
     </div>
     <!-- Grid dialogues -->
-    <div class="grid grid-cols-12 gap-y-4 pt-1 my-4">
-        <nx-anymind-message *ngFor="let item of obs.vm.dialogues" [message]="item.text"
-            [isUserMessage]="isUserMessage(item.messageId)"
-            [class]="getMessageGridClassName(isUserMessage(item.messageId))" [isUnsentMessage]="false">
+    <div #scrollChat class="grid grid-cols-12 gap-y-4 pt-1 my-4 overflow-y-auto">
+        <nx-anymind-message *ngFor="let item of obs.vm.dialogues.slice().reverse()" [message]="item"
+            [isUserMessage]="isUserMessage(item.userId)"
+            [class]="getMessageGridClassName(isUserMessage(item.userId))" 
+            [messageStatus]="item.messageId"
+            [avatar]="getUserAvatar(item.userId)">
         </nx-anymind-message> 
     </div>
 
     <!-- Read more (new message) -->
-    <div (click)="getMoreMessage(false)"
-        class="group absolute text-md bottom-0 left-0 bg-red-400 py-2 px-4 shadow rounded-xl hover:bg-red-500 active:bg-red-600">
+    <div
+        class="z-50 group absolute text-md bottom-0 left-0 bg-red-400 py-2 px-4 shadow rounded-xl hover:bg-red-500 active:bg-red-600">
         <div>
-            <button class="flex items-center text-white justify-center focus:outline-none">
+            <button (click)="getMoreMessage(false)" class="flex items-center text-white justify-center focus:outline-none">
                 <span>Read more</span>
                 <span class="ml-1 w-5">
-                    <svg *ngIf="obs.vm.isSuccessFetchNewer" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    <svg *ngIf="!obs.vm.isLoadingNewer" class="animate-bounce" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M16 17l-4 4m0 0l-4-4m4 4V3" />

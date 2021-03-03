@@ -1,29 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { tap } from 'rxjs/operators';
 import { Message, User } from '../../core/model/core.interface';
 import { AppState, CurrentSelection } from '../../core/store/app.state';
 import { selectCurrentSelection } from '../../core/store/selectors/current-selection.selectors';
 import { selectUsers } from '../../core/store/selectors/user.selectors';
 import { DialogueComponentStore } from '../store/dialogue.component.store';
-import { SendMessageComponentStore } from '../store/send-message.store';
 
 @Component({
     selector: 'nx-anymind-dialogue',
     templateUrl: './dialogue.component.html',
-    styleUrls: ['./dialogue.component.scss'],
-    providers: [DialogueComponentStore]
+    styleUrls: ['./dialogue.component.scss']
 })
-export class DialogueComponent implements OnInit {
+export class DialogueComponent implements OnInit, AfterViewInit {
+    @ViewChild('scrollMe') private gridChat: ElementRef;
     currentSelection: CurrentSelection;
     users: User[];
     viewModel$ = this.componentStore.viewModel$;
-    sendMessageVm$ = this.sendMessageComponentStore.viewModel$;
     dialogue: Message[] = [];
 
     constructor(
         private componentStore: DialogueComponentStore,
-        private sendMessageComponentStore: SendMessageComponentStore,
         private store: Store<AppState>,
     ) { }
 
@@ -37,29 +33,28 @@ export class DialogueComponent implements OnInit {
             }
         });
 
-        this.viewModel$.pipe(tap(vm => {
-            this.dialogue = vm.dialogues;
-        }));
+        this.viewModel$.subscribe(
+            vm => {
+                this.dialogue = vm.dialogues;
+                if (vm.sendStatus === 'loading') {
+                    this.scrollToBottom();
+                }
+            }
+        );
 
         this.store.pipe(select(selectUsers)).subscribe(users => this.users = users);
 
-        this.sendMessageVm$.pipe(tap(({ error, postResponse, sendMessage }) => {
-            if (postResponse) {
-                this.componentStore.updateNewMessageStatus(postResponse.messageId);
-            }
-            if (sendMessage) {
-                const msg: Message = {
-                    dateTime: Date.now().toString(),
-                    text: sendMessage.text,
-                    userId: this.currentSelection.currentUserId,
-                    avatar: this.getUserAvatar(this.currentSelection.currentUserId)
-                };
-                this.componentStore.addNewMessage(msg);
-            }
-            if (error) {
-                this.componentStore.updateNewMessageStatus('unsent');
-            }
-        }));
+        this.scrollToBottom();
+    }
+
+    ngAfterViewInit() {
+        this.scrollToBottom();
+    }
+
+    scrollToBottom(): void {
+        try {
+            this.gridChat.nativeElement.scrollTop = this.gridChat.nativeElement.scrollHeight;
+        } catch(err) { }                 
     }
 
     getMoreMessage(old: boolean): void {
@@ -67,7 +62,8 @@ export class DialogueComponent implements OnInit {
         if (old === true) {
             messageId = this.dialogue[this.dialogue.length - 1]?.messageId;
         } else if (old === false) {
-            messageId = this.dialogue[0]?.messageId
+            messageId = this.dialogue[0]?.messageId;
+            this.scrollToBottom();
         }
 
         this.componentStore.fetchMoreMessageEffect({
@@ -78,15 +74,11 @@ export class DialogueComponent implements OnInit {
     }
 
     getUserAvatar(userId: string): string {
-        return this.users.find(user => user.id === userId)?.id;
+        return this.users.find(user => user.id === userId)?.avatar;
     }
 
     isUserMessage(messageId: string): boolean {
         return messageId === this.currentSelection.currentUserId;
-    }
-
-    isUnsentMessage() {
-        //
     }
 
     getMessageGridClassName(isUserMessage: boolean): string {

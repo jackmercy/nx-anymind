@@ -18,4 +18,5 @@ export interface Message {
     dateTime: string;
     userId: string;
     avatar?: string;
+    status?: string;
 }

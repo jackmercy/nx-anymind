@@ -1,17 +1,42 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { ImmerComponentStore } from 'ngrx-immer/component-store';
-import { switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { Message } from '../../core/model/core.interface';
-import { channelId, qlStatus } from '../../core/type/core.type';
+import { channelId, qlStatus, userId } from '../../core/type/core.type';
 
 export interface DialogueComponentState {
     fetchLatestStatus: qlStatus;
     fetchOlderMessageStatus: qlStatus;
     fetchNewerMessageStatus: qlStatus;
     dialogues: Message[];
+
+    sendStatus: qlStatus;
+    sendMessage: PostMessageRequest;
+    postResponse: Message;
+    sendError: any;
 }
 
+export type PostMessageRequest = {
+    channelId: channelId;
+    text: string;
+    userId: userId;
+    avatar?: string;
+};
+
+const PostMessageQL = gql`
+mutation (
+    $channelId: String!,
+    $text: String!,
+    $userId:String!
+) {
+    postMessage(channelId:$channelId, text:$text, userId:$userId) {
+        messageId,
+        text,
+        datetime,
+        userId
+    }
+}`;
 
 const QueryLatestQL = gql`
 query fetchLatest($channelId: String!){
@@ -41,8 +66,9 @@ query fetchMore($channelId: String!, $messageId: String!, $old: Boolean!){
 @Injectable()
 export class DialogueComponentStore extends ImmerComponentStore<DialogueComponentState> {
     readonly viewModel$ = this.select(this.state$, ({
-        dialogues, fetchLatestStatus, fetchNewerMessageStatus, fetchOlderMessageStatus 
+        dialogues, fetchLatestStatus, fetchNewerMessageStatus, fetchOlderMessageStatus, sendStatus
     }) => ({
+        sendStatus,
         dialogues,
         // latest
         isLoadingLatest: fetchLatestStatus === 'loading',
@@ -75,17 +101,44 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
     });
 
     readonly addNewMessage = this.updater<Message>((state, message) => {
-        state.dialogues = [...state.dialogues, { ...message, messageId: 'loading' }];
+        state.dialogues = [{ ...message, messageId: '' }, ...state.dialogues];
     });
 
-    readonly updateNewMessageStatus = this.updater<string>((state, status) => {
-        const index = state.dialogues.findIndex(msg => msg.messageId === 'loading');
-        state.dialogues[index].messageId = status;
+    readonly updateNewMessageStatus = this.updater<{ id: string, status: string }>((state, data) => {
+        const dialogues = state.dialogues.slice();
+        let newMessage = dialogues.shift();
+        newMessage = { ...newMessage, messageId: data.id, status: data.status };
+
+        state.dialogues = [{ ...newMessage }, ...dialogues];
+    });
+
+    readonly updateErrorMessageStatus = this.updater<{ id: string, status: string }>((state, data) => {
+        const dialogues = state.dialogues.slice();
+        let errMsg = dialogues.shift();
+        const lastSuccessMsg = dialogues.shift();
+        // bind ID of last success message to not break the load more message function.
+        errMsg = { ...errMsg, messageId: lastSuccessMsg.messageId, status: data.status };
+
+        state.dialogues = [{ ...errMsg }, lastSuccessMsg, ...dialogues];
     });
 
     readonly updateFetchMoreDialogues = this.updater<{ moreDialogue: Message[], old: boolean }>((state, data) => {
-        const updatedDialogues = data.old ? [...state.dialogues, ...data.moreDialogue]: [...data.moreDialogue, ...state.dialogues];
+        let updatedDialogues: Message[] = [];
+        if (data.old && data.moreDialogue !== null) {
+            updatedDialogues = [...state.dialogues, ...data?.moreDialogue];
+        } else if (!data.old && data.moreDialogue !== null) {
+            updatedDialogues = [...data?.moreDialogue, ...state.dialogues];
+        }
         state.dialogues = updatedDialogues;
+    });
+
+    readonly updateSendMessageState = this.updater<{
+        sendStatus: qlStatus, sendMessage?: PostMessageRequest, postResponse: Message, sendError: any
+    }>((state, updater) => {
+        state.sendStatus = updater.sendStatus;
+        state.sendMessage = updater.sendMessage;
+        state.postResponse = updater.postResponse;
+        state.sendError = updater.sendError;
     });
 
     readonly fetchLatestMessageEffect = this.effect<channelId>(event$ => event$.pipe(
@@ -100,7 +153,7 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
                 if (!error && !loading) {
                     this.updateFetchLatestStatus('success');
                     const result: any = data;
-                    this.updateDialogues(result?.fetchLatestMessages);
+                    this.updateDialogues(result?.fetchLatestMessages || []);
                 }
             })
         ))
@@ -108,7 +161,7 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
 
     readonly fetchMoreMessageEffect = this.effect<QueryMoreRequest>(event$ => event$.pipe(
         tap((request) => this.updateFetchMoreStatus({ old: request.old, status: 'loading' })),
-        switchMap(( request: QueryMoreRequest ) => {
+        switchMap((request: QueryMoreRequest) => {
             const requestData = request;
             return this.apollo.watchQuery({
                 query: QueryMoreQL,
@@ -129,14 +182,78 @@ export class DialogueComponentStore extends ImmerComponentStore<DialogueComponen
         })
     ));
 
+    readonly sendMessageEffect = this.effect<{ reqBody: PostMessageRequest }>(event$ => event$.pipe(
+        tap(({ reqBody }) => {
+            // this.updateSendMessage(reqBody);
+            // this.updateSendStatus('loading');
+            const msg: Message = {
+                dateTime: Date.now().toString(),
+                text: reqBody.text,
+                userId: reqBody.userId,
+                avatar: reqBody?.avatar,
+                status: 'loading'
+            };
+            this.updateSendMessageState({
+                sendStatus: 'loading',
+                sendMessage: reqBody,
+                postResponse: undefined,
+                sendError: undefined
+            });
+            this.addNewMessage(msg);
+        }),
+        switchMap(({ reqBody }) => {
+            // cannot identify which message was unsent if user sent multiple messages
+            // => limit one message at a time for now b/c the error respone does not 
+            // give any information about the message that cause error.
+            return this.apollo.mutate({
+                mutation: PostMessageQL,
+                variables: {
+                    ...reqBody
+                },
+                errorPolicy: 'all',
+            }).pipe(
+                tap(({ data, errors }) => {
+                    const result: any = data;
+                    if (!errors && result?.postMessage !== null) {
+                        this.updateSendMessageState({
+                            sendStatus: 'success',
+                            sendMessage: undefined,
+                            postResponse: result?.postMessage as Message,
+                            sendError: undefined
+                        });
+                        this.updateNewMessageStatus({
+                            status: 'success',
+                            id: result?.postMessage.messageId
+                        });
+                    } else if (errors && result?.postMessage === null) {
+                        this.updateSendMessageState({
+                            sendStatus: 'fail',
+                            sendMessage: undefined,
+                            postResponse: undefined,
+                            sendError: errors
+                        });
+                        this.updateErrorMessageStatus({
+                            status: 'unsent',
+                            id: ''
+                        });
+                    }
+                })
+            );
+        })
+    ));
+
     constructor(
         private apollo: Apollo
     ) {
         super({
-            dialogues: undefined,
+            dialogues: [],
             fetchLatestStatus: undefined,
             fetchNewerMessageStatus: undefined,
-            fetchOlderMessageStatus: undefined
+            fetchOlderMessageStatus: undefined,
+            postResponse: undefined,
+            sendError: undefined,
+            sendMessage: undefined,
+            sendStatus: undefined
         } as DialogueComponentState);
     }
 }

@@ -11,7 +11,7 @@ import { reducers } from './store/reducers/index.reducer';
 
 // import { reducers } from './store/reducers/index.reducer';
 
-const uri = 'https://angular-test-backend-yc4c5cvnnq-an.a.run.app/graphiql';
+const uri = 'https://angular-test-backend-yc4c5cvnnq-an.a.run.app/graphql';
 
 const linkError = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
@@ -34,6 +34,7 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
         cache: new InMemoryCache(),
         defaultOptions: {
             watchQuery: {
+                fetchPolicy: 'no-cache',
                 errorPolicy: 'all'
             }
         }

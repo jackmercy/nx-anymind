@@ -9,7 +9,8 @@ import { Message } from '../../core/model/core.interface';
 export class MessageComponent {
     @Input() message: Message;
     @Input() isUserMessage = true;
-    @Input() messageStatus: 'loading' | 'unsent' = undefined;
+    @Input() messageStatus: string = undefined;
+    @Input() avatar: string;
 
     getMessageContainerClassName(): string {
         if (this.isUserMessage) {
