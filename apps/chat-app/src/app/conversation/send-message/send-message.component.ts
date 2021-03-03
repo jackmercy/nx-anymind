@@ -21,7 +21,19 @@ export class SendMessageComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.store.pipe(select(selectCurrentSelection)).subscribe(value => this.currentSelection = value);
+        this.store.pipe(select(selectCurrentSelection)).subscribe(value => {
+            this.currentSelection = value;
+            const initSendInput = sessionStorage.getItem(this.currentSelection.currentChannelId);
+            this.sendInput.setValue(
+                initSendInput !== 'null' ? initSendInput : ''
+            );
+        });
+
+        this.sendInput.valueChanges.subscribe(
+            value => {
+                sessionStorage.setItem(this.currentSelection.currentChannelId, value);
+            }
+        );
     }
 
     sendMessage(): void {
